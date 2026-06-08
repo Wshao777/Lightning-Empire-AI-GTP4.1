@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>⚡ 帝國 AI 運營總控台</title>
+    <meta charset="utf-8">
+    <style>
+        body { background: #0a0a0a; color: #eee; font-family: monospace; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 20px; }
+        .card { background: #1e1e2f; border-radius: 16px; padding: 20px; border: 1px solid #2a2a3a; }
+        .amount { font-size: 36px; color: #0f0; font-weight: bold; }
+        .label { color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #2a2a3a; }
+        .pending { color: #fa0; }
+        .received { color: #0f0; }
+        button { background: #2a6f5c; border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
+        input, select { background: #2a2a3a; border: 1px solid #3a3a4a; color: white; padding: 8px; border-radius: 6px; }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 20px; font-size: 12px; }
+        .online { background: #0f5c2e; }
+        .offline { background: #7a2e2e; }
+    </style>
+</head>
+<body>
+    <h1>⚡ 帝國 AI 營運總控台 | <span id="wsStatus" class="status-badge offline">離線</span></h1>
+    <div class="grid">
+        <!-- 資金模塊 -->
+        <div class="card">
+            <div class="label">總鎖定資金 (USDC)</div>
+            <div class="amount" id="totalLocked">載入中...</div>
+        </div>
+        <div class="card">
+            <div class="label">AI 健康狀態</div>
+            <div>CPU: <span id="cpuUsage">--</span>%</div>
+            <div>RAM: <span id="ramUsage">--</span>%</div>
+            <div>最後告警: <span id="lastAlert">無</span></div>
+        </div>
+        <div class="card">
+            <div class="label">命令中心 (AEMTS)</div>
+            <input id="nodeId" placeholder="node_id" style="width:100px">
+            <input id="command" placeholder="command">
+            <button onclick="sendCommand()">發送</button>
+            <pre id="cmdLog" style="font-size:12px; margin-top:12px;"></pre>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📥 待分潤清單</h2>
+        <table id="pendingTable"><thead><tr><th>付款方</th><th>金額 (USDC)</th><th>狀態</th></tr></thead><tbody></tbody></table>
+        <button onclick="distribute()" style="margin-top:12px">⚡ 執行分潤 (AI 70% / 帝國 30%)</button>
+    </div>
+
+    <div class="card">
+        <h2>📜 已分潤記錄</h2>
+        <table id="historyTable"><thead><tr><th>時間</th><th>總額</th><th>AI (70%)</th><th>帝國 (30%)</th><th>Merkle</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <script>
+        // WebSocket 連接 (可選，用於接收節點推送)
+        let ws;
+        function connectWS() {
+            ws = new WebSocket(`ws://${location.host}/ws`);
+            ws.onopen = () => document.getElementById('wsStatus').innerText = '在線';
+            ws.onclose = () => document.getElementById('wsStatus').innerText = '離線';
+            ws.onmessage = (e) => {
+                const log = document.getElementById('cmdLog');
+                log.innerText = e.data + '\n' + log.innerText;
+            };
+        }
+        connectWS();
+
+        async function fetchData() {
+            // 總資金
+            const totalRes = await fetch('/api/funds/total');
+            const totalData = await totalRes.json();
+            document.getElementById('totalLocked').innerText = '$' + totalData.total.toLocaleString();
+
+            // 待分潤
+            const pendingRes = await fetch('/api/funds/pending');
+            const pendingData = await pendingRes.json();
+            const pendingTbody = document.querySelector('#pendingTable tbody');
+            pendingTbody.innerHTML = '';
+            pendingData.pending.forEach(p => {
+                const row = `<tr><td>${p.from}</td><td>$${p.amount.toLocaleString()}</td><td class="pending">待分潤</td></tr>`;
+                pendingTbody.innerHTML += row;
+            });
+
+            // 歷史
+            const historyRes = await fetch('/api/funds/history');
+            const historyData = await historyRes.json();
+            const historyTbody = document.querySelector('#historyTable tbody');
+            historyTbody.innerHTML = '';
+            historyData.history.forEach(h => {
+                const aiAmount = h.amount * 0.7;
+                const empireAmount = h.amount * 0.3;
+                const row = `<tr><td>${h.timestamp.slice(0,19)}</td><td>$${h.amount.toLocaleString()}</td><td>$${aiAmount.toLocaleString()}</td><td>$${empireAmount.toLocaleString()}</td><td>${h.merkle_root}</td></tr>`;
+                historyTbody.innerHTML += row;
+            });
+        }
+
+        async function distribute() {
+            // 模擬分潤：將所有 pending 標記為 distributed
+            const pendingRes = await fetch('/api/funds/pending');
+            const { pending } = await pendingRes.json();
+            for (let p of pending) {
+                await fetch('/api/funds/receipt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ from_addr: p.from, amount: p.amount, distributed: true })
+                });
+            }
+            alert('分潤指令已發送，請刷新頁面查看記錄');
+            fetchData();
+        }
+
+        async function sendCommand() {
+            const node = document.getElementById('nodeId').value;
+            const cmd = document.getElementById('command').value;
+            if (!node || !cmd) return;
+            const res = await fetch('/api/command', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ node_id: node, command: cmd })
+            });
+            const data = await res.json();
+            document.getElementById('cmdLog').innerText = `[發送] ${node} : ${cmd}\n回應: ${data.status}\n` + document.getElementById('cmdLog').innerText;
+        }
+
+        async function loadHealth() {
+            const res = await fetch('/api/health');
+            const h = await res.json();
+            document.getElementById('cpuUsage').innerText = h.cpu;
+            document.getElementById('ramUsage').innerText = h.ram;
+            document.getElementById('lastAlert').innerText = h.last_alert.slice(0, 50) || '無';
+        }
+
+        fetchData();
+        loadHealth();
+        setInterval(loadHealth, 10000);
+    </script>
+</body>
+</html>
