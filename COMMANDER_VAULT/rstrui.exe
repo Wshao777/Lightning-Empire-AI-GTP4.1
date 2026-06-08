@@ -1,0 +1,8 @@
+import shutil, time
+
+src = r"D:\Lightning-AI-ALL"
+dst = r"D:\COMMANDER_VAULT\backup"
+
+while True:
+    shutil.copytree(src, dst, dirs_exist_ok=True)
+    time.sleep(300)
