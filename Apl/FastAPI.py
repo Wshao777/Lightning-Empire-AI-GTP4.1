@@ -18,3 +18,12 @@
         "*"
     ]
 }
+from fastapi.responses import FileResponse
+
+@app.get("/")
+def home():
+    return FileResponse("web/index.html")
+
+@app.get("/dashboard")
+def dashboard():
+    return FileResponse("web/dashboard.html")
