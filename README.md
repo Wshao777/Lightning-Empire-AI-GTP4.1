@@ -1,3 +1,10 @@
+
+文件 作用
+.env 10 个密钥 + 全部防护参数
+requirements.txt 依赖清单
+install.sh / .bat 一键安装
+rotate_keys.py 密钥轮换脚本（支持 dry-run）
+ai_protector.py 全功能守护进程：医疗、防御、修复、回溯、定时轮换
 # D-
 COMMANDER_VAULT
 FileSentinel/
