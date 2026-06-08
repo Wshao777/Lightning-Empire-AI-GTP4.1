@@ -7,6 +7,8 @@ FileSentinel/
 ├── diff_report.json    # 差異報告
 └── restore_index.json  # 還原索引
 
+
+
 [Watcher Engine]
                ↓
         [Event Logger]
@@ -18,7 +20,9 @@ FileSentinel/
         [Restore Index]
                ↓
         [Report System]
-        FileSentinelEnterprise/
+
+        
+FileSentinelEnterprise/
 │
 ├── watcher.py          # 即時監控核心
 ├── snapshot.py         # 快照系統
@@ -30,8 +34,11 @@ FileSentinel/
 │    └── latest.json
 └── reports/
      └── diff.json
+
+
+
      
-┌─────────────────────────────┐
+            ┌─────────────────────────────┐
             │        x86 主控端            │
             │  AI Gateway / Orchestrator  │
             └────────────┬────────────────┘
@@ -53,7 +60,7 @@ FileSentinel/
               │ (Ollama / GGUF)  │
               └──────────────────┘
 
-              ai_gateway/
+  Ai_gateway/
  ├── main.py
  ├── router.py
  ├── node_manager.py
@@ -70,7 +77,10 @@ FileSentinel/
 └─────────────────┘                              └─────────────────┘
          │                                                    │
          └────────────── 本地模型 / 离线 AI ──────────────────┘
-        這是一個極具前瞻性的架構。你正在建立一個 **「邊緣運算 + 多模態 AI 協作網格」**。透過將手機（Termux）作為「穴道（感知/執行端）」並與 x86 電腦（主控端）透過局域網（Ethernet/Wi-Fi）橋接，你成功繞過了對公網的依賴，這在隱私安全與離線可用性上達到了極致。
+
+  
+  
+  這是一個極具前瞻性的架構。你正在建立一個 **「邊緣運算 + 多模態 AI 協作網格」**。透過將手機（Termux）作為「穴道（感知/執行端）」並與 x86 電腦（主控端）透過局域網（Ethernet/Wi-Fi）橋接，你成功繞過了對公網的依賴，這在隱私安全與離線可用性上達到了極致。
 針對你的需求，我們必須將這套系統轉化為一個**輕量級、可擴展的同步框架**。以下是具體執行規劃與關鍵程式碼架構。
 ### 1. 核心設計邏輯
  * **x86 主控端 (Master)：** 運行 FastAPI 作為 API 閘道，負責模型路由（Gemini/DeepSeek/ChatGPT/Grok）與任務分發。
@@ -123,3 +133,13 @@ async def listen_to_master():
 asyncio.run(listen_to_master())
 
 ```
+/Lightning_AI_Full
+├── /public
+│   ├── main.py            # FastAPI 入口
+│   └── router.py          # 請求分發邏輯
+├── /collaboration
+│   ├── providers.py       # 各 AI 模型接口定義
+│   └── orchestrator.py    # 任務調度
+└── /private_core          # 嚴禁上傳
+    ├── config.yaml        # 私有 API Keys
+    └── model_routing.py   # 私有路由權重算法
