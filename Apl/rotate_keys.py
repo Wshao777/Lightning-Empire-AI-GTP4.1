@@ -39,3 +39,74 @@ if __name__ == "__main__":
         print("🔄 正在觸發服務重啟 (Signal SIGHUP)...")
         # subprocess.run(["systemctl", "restart", "lightning_ai"]) 
 
+import argparse
+import secrets
+
+KEY_MAP = {
+    "key_1": "KEY_DEV_MASTER",
+    "key_2": "KEY_PROD_MASTER",
+    "key_3": "KEY_BOT_DISPATCH",
+    "key_4": "KEY_BOT_MONITOR",
+    "key_10": "KEY_BACKUP_DR"
+}
+
+
+def generate_key(length):
+    return secrets.token_hex(length // 2)
+
+
+def rotate(keys, length, dry_run):
+    for key in keys:
+        name = KEY_MAP.get(key)
+
+        if not name:
+            print(f"[SKIP] Unknown key: {key}")
+            continue
+
+        new_key = generate_key(length)
+
+        if dry_run:
+            print(f"[DRY-RUN] {name}")
+            print(f"  new_key={new_key}")
+        else:
+            print(f"[ROTATED] {name}")
+            # TODO:
+            # update .env
+            # update vault
+            # update database
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--keys",
+        default="all"
+    )
+
+    parser.add_argument(
+        "--length",
+        type=int,
+        default=48
+    )
+
+    parser.add_argument(
+        "--dry-run",
+        action="store_true"
+    )
+
+    args = parser.parse_args()
+
+    if args.keys == "all":
+        target_keys = list(KEY_MAP.keys())
+    else:
+        target_keys = [
+            k.strip()
+            for k in args.keys.split(",")
+        ]
+
+    rotate(
+        target_keys,
+        args.length,
+        args.dry_run
+    )
