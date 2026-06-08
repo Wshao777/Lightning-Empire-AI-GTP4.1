@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>节点监控仪表板</title>
+    <style>
+        body { background: #0a0a0a; color: #eee; font-family: monospace; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 15px; margin-bottom: 30px; }
+        .card { background: #1e1e2f; border-radius: 12px; padding: 15px; border: 1px solid #2a2a3a; }
+        .value { font-size: 28px; font-weight: bold; color: #0f0; }
+        .label { color: #aaa; font-size: 14px; text-transform: uppercase; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #2a2a3a; }
+        .online { color: #0f0; }
+        .offline { color: #f66; }
+    </style>
+</head>
+<body>
+    <h1>📊 节点实时监控</h1>
+    <div class="grid">
+        <div class="card"><div class="label">总节点数</div><div class="value" id="totalNodes">--</div></div>
+        <div class="card"><div class="label">在线节点</div><div class="value" id="onlineNodes">--</div></div>
+        <div class="card"><div class="label">待处理任务</div><div class="value" id="taskQueue">--</div></div>
+        <div class="card"><div class="label">平均CPU</div><div class="value" id="avgCpu">--%</div></div>
+        <div class="card"><div class="label">平均RAM</div><div class="value" id="avgRam">--%</div></div>
+    </div>
+    <div class="card">
+        <h3>节点详情</h3>
+        <table id="nodeTable">
+            <thead><tr><th>节点ID</th><th>状态</th><th>CPU</th><th>RAM</th><th>最后心跳</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="card">
+        <h3>任务队列</h3>
+        <table id="taskTable">
+            <thead><tr><th>任务ID</th><th>目标节点</th><th>指令</th><th>状态</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>
