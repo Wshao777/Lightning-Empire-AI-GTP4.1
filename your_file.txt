@@ -1,0 +1,11 @@
+from pathlib import Path
+
+file = Path("your_file.txt")
+
+for enc in ["utf-8", "big5", "gbk", "cp950"]:
+    try:
+        print("TRY:", enc)
+        print(file.read_text(encoding=enc)[:200])
+        break
+    except:
+        pass
