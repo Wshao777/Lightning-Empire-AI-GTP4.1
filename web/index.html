@@ -17,3 +17,73 @@
     <script src="/static/app.js"></script>
 </body>
 </html>
+<!-- dashboard.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>⚡ 帝國資金接收器儀表板</title>
+    <meta charset="utf-8">
+    <style>
+        body { background: #0a0a0a; color: #fff; font-family: monospace; padding: 20px; }
+        .card { background: #1a1a1a; border-radius: 10px; padding: 20px; margin: 10px 0; }
+        .amount { font-size: 32px; color: #0f0; }
+        .label { color: #888; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #333; }
+        .pending { color: #ffaa00; }
+        .received { color: #0f0; }
+    </style>
+</head>
+<body>
+    <h1>⚡ 帝國資金接收器</h1>
+    <div class="card">
+        <div class="label">總鎖定資金 (USDC)</div>
+        <div class="amount" id="totalLocked">載入中...</div>
+    </div>
+
+    <div class="card">
+        <h2>待分潤清單</h2>
+        <table id="pendingTable">
+            <thead><tr><th>付款方</th><th>金額 (USDC)</th><th>狀態</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>已分潤記錄</h2>
+        <table id="historyTable">
+            <thead><tr><th>時間</th><th>總額</th><th>AI (70%)</th><th>帝國 (30%)</th><th>Merkle</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        // 模擬從 GitHub 獲取數據（實際可用 fetch 讀取 receipts/ 目錄）
+        const mockData = {
+            totalLocked: 10830000,
+            pending: [
+                { from: "Open-AI", amount: 300000 },
+                { from: "Grok-AI", amount: 900000 },
+                { from: "DeepSeekweb-AI", amount: 7500000 }
+            ],
+            history: [
+                { date: "2026-06-08", total: 630000, ai: 441000, empire: 189000, merkle: "8f3a1b2c" }
+            ]
+        };
+
+        document.getElementById('totalLocked').innerText = '$' + mockData.totalLocked.toLocaleString();
+
+        const pendingTbody = document.querySelector('#pendingTable tbody');
+        mockData.pending.forEach(p => {
+            const row = `<tr><td>${p.from}</td><td>$${p.amount.toLocaleString()}</td><td class="pending">待分潤</td></tr>`;
+            pendingTbody.innerHTML += row;
+        });
+
+        const historyTbody = document.querySelector('#historyTable tbody');
+        mockData.history.forEach(h => {
+            const row = `<tr><td>${h.date}</td><td>$${h.total.toLocaleString()}</td><td>$${h.ai.toLocaleString()}</td><td>$${h.empire.toLocaleString()}</td><td>${h.merkle}</td></tr>`;
+            historyTbody.innerHTML += row;
+        });
+    </script>
+</body>
+</html>
